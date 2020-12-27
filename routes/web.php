@@ -13,6 +13,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::group([ 'middleware' => 'setlocale'], function() {
+
+    Route::get('/', function () {
+        return view('welcome');
+    });
+
+});
+
+Route::group(['prefix' => '{locale}', 'middleware' => 'setlocale'], function() {
+    Route::any('/', function(){
+        return view('welcome');
+    });
+    Route::any('/en', 'GMA\WebController@index')->name('home');
 });

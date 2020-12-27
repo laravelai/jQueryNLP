@@ -1,62 +1,64 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# jQueryNLP - Brief Introduction
+This application is based on Laravel, jQuery and NLP API ( Currently [TecentAI platform](https://ai.qq.com/doc/nlptrans.shtml) ). It tries to solve the locales issue of a whole page.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel has [localization function](https://laravel.com/docs/8.x/localization). It's good to use this function for some static text like titles / head lines. For dynamic content, translation function of browser (e.g. Chrome) is also good enough. But it doesn't work in some regions. So we use jQuery and the NLP API to translate the dynamic content. Then we have a complete solution of localization.
 
-## About Laravel
+If you don't use Laravel, you may still use the front-end part of this application by simply setting the source language, target language and the update the ajax response part in Javascript.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+--- 
+## Configuration
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### **.env file in Laravel**
+        APP_LOCALE=en  
+        APP_LOCAL_PREFIX=
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+APP_LOCALE will set the default locale of the application.   
+APP_LOCAL_PREFIX will set the default prefix of the default locale. Some users may like to keep it blank (no prefix). For locale other than the default locale, the prefix will be the abbreviation of the language, e.g. 'zh', 'de', etc.
 
-## Learning Laravel
+### **setLocale middleware in Laravel**
+The file should be copied to app/Http/Middleware directory. The middleware should registered in Kernel.php by adding the following line to $routeMiddleware array:        
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+        'setlocale' => \App\Http\Middleware\SetLocale::class,
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### **TencentAIController in Laravel**   
 
-## Laravel Sponsors
+We use the example code snippets from [TecentAI platform](https://ai.qq.com/doc/nlptrans.shtml). You may apply the app_id and app_key from the platform or build your own NLP API.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### **Routers in Laravel**   
 
-### Premium Partners
+If your build your own NLP api, you should add the route into api.php. Otherwise you should modify the jquery-trans.js source code to set the correct URL of the NLP API.   
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/)**
-- **[OP.GG](https://op.gg)**
+If you don't want to use the prefix of default locale, you may use two route groups to handle these two conditions (with prefix and without prefix). If you want to use a default prefix, just keep the second route group.
+     
+        Route::group([ 'middleware' => 'setlocale'], function() {
+            Route::get('/', function () {
+                return view('welcome');
+            });
+        });
 
-## Contributing
+        Route::group(['prefix' => '{locale}', 'middleware' => 'setlocale'], function() {
+            Route::any('/', function(){
+                return view('welcome');
+            });
+            Route::any('/en', 'GMA\WebController@index')->name('home');
+        });
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   
+---
+## Usage of the front-end
+After setting the .env file, the setLocale middleware and the NLP api, the jQuery part will be:
 
-## Code of Conduct
+        @if(config('app.locale')!==env('APP_LOCALE'))
+            <script>
+                var source_lang="{{env('APP_LOCALE')}}";
+                var target_lang="{{config('app.locale')}}";
+            </script>
+            <script src="/js/jquery-trans.js"></script>
+        @endif
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+For all the DIVs you want to translate, just add "trans_" at the beginning of the id:  
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+        <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm"  id="trans_4">
+            Laravel's robust library of first-party tools and libraries, such as <a href="https://forge.laravel.com" class="underline">Forge</a>, ... , and more.
+        </div>
+As you can see, the jQuery part could deal with HTML code which allow you to use it for complex DIVs. 
