@@ -17,4 +17,4 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::post('/nlp', 'App\Http\Controllers\TencentAIController@nlpTrans');
+Route::post('/nlp', 'App\Http\Controllers\Controller@setTranslateEngine');

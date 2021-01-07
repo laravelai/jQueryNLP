@@ -1,4 +1,7 @@
+
+// Collect all jQuery objects
 var transObjects = $("[id^='trans']");
+
 var text_array=new Array(transObjects.length);
 for(let i=0;i<transObjects.length;i++){
     text_array[i]=new Array();
@@ -9,32 +12,43 @@ for(let i=0;i<transObjects.length;i++){
 // Join text from different divs into one string
 var srcText = text_array.join('\n\n');
 
+// available example engines ['tencent_ai','tencent_cloud']
 var transData={
     'source'     : source_lang,
     'target'     : target_lang,
     'text'       : srcText,
+    'engine'     : 'tencent_ai'
 }
 
 //Use Ajax to get translated text via Tencent AI Platform
-var getTrans=$.ajax({
-    type: 'POST',
-    url: '/api/nlp',
-    data: transData,
-    success: function(data){
+if(srcText.length>1){
+    var getTrans=$.ajax({
+        type: 'POST',
+        url: '/api/nlp',
+        data: transData,
+        success: function(data){
+    
+            //split into contents for div
+            if(data.ret!==0){
+                console.log(data.msg)
+                return;  //do nothing;
+            } 
+    
+            let responseText=data.target_text
+            
+            text_array=responseText.split('\n\n')
+    
+            //Processing each div
+            for(let i=0;i<transObjects.length;i++){
+                //split translated text into different jQuery childNodes
+                text_array[i]=text_array[i].split('\n');
+                updateNodeText(transObjects[i],text_array[i]);
+            }
+        },
+        dataType: 'json',
+    });
+}
 
-        //split into contents for div
-        let responseText=data.data.target_text
-        text_array=responseText.split('\n\n')
-
-        //Processing each div
-        for(let i=0;i<transObjects.length;i++){
-            //split translated text into different jQuery childNodes
-            text_array[i]=text_array[i].split('\n');
-            updateNodeText(transObjects[i],text_array[i]);
-        }
-    },
-    dataType: 'json',
-});
 
 //Covert all jQuery childNodes' text to array
 function getNodeText(TransObj,text_array){
@@ -45,8 +59,10 @@ function getNodeText(TransObj,text_array){
         }
         else{
             if(TransObj.childNodes[i].nodeName==="#text"){
-                let parsedText=delExtraSpaces(delNewlines(TransObj.childNodes[i].data))
-                if(parsedText!==""  && parsedText!==" ") text_array.push(parsedText);
+                let parsedText=delExtraSpaces(delExtraTabs(delNewlines(TransObj.childNodes[i].data))).trim();
+                if(parsedText!==""  && parsedText!==" "){
+                    text_array.push(parsedText);
+                } 
             } 
         }
     }
@@ -61,7 +77,7 @@ function updateNodeText(TransObj,text_array){
         }
         else{
             if(TransObj.childNodes[i].nodeName==="#text"){
-                let parsedText=delExtraSpaces(delNewlines(TransObj.childNodes[i].data)).trim();
+                let parsedText=delExtraSpaces(delExtraTabs(delNewlines(TransObj.childNodes[i].data))).trim();
                 let sentenseEnd=['.','。','?','!'];
                 if(parsedText!=="" && parsedText!==" "){
                     if(text_array[0]!==undefined){
@@ -93,4 +109,11 @@ function delExtraSpaces(nodeText){
         return delExtraSpaces(nodeText.replace('  ',' '));
     }
     return nodeText;
+}
+
+//Remove extra white tab
+function delExtraTabs(nodeText){
+   nodeText=nodeText.replace(/\t/g,'');
+   nodeText=nodeText.replace(/&nbsp;/g,'');
+   return nodeText;
 }

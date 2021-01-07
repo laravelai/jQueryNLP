@@ -9,10 +9,10 @@ class TencentAIController extends Controller
     /*
         @param Request $request
     */
-    public function nlpTrans(Request $request)
+    public static function nlpTrans(Request $request)
     {
-        $app_id = "your app_id";
-        $app_key = "your app_key";
+        $app_id = "your id";
+        $app_key = "your key";
         $url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_texttranslate';
 
         $params = array(
@@ -25,13 +25,20 @@ class TencentAIController extends Controller
             'sign'       => '',
         );
 
+        $myController=new TencentAIController();
+
         //get the signature 
-        $params['sign'] = $this->getReqSign($params, $app_key);
+        $params['sign'] = $myController->getReqSign($params, $app_key);
         
         //get the response of url (AI platform)
-        $response = $this->doHttpPost($url, $params);
+        $response = $myController->doHttpPost($url, $params);
 
-        echo $response;
+        $response =json_decode($response);
+        return json_encode(array(
+            'ret'=>$response->ret,
+            'target_text'=>$response->data->target_text,
+            'msg'=>$response->msg
+        ));
 
     }
 

@@ -27,7 +27,13 @@
             .current_lang{
                 background-color:#696 !important;
             }
+            .lang_select{
+                margin:2px;
+                height: 25px;
+                border: #666 1px solid;
+            }
         </style>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     </head>
     <body class="antialiased">
     
@@ -61,7 +67,51 @@
                         <a href="/jp"><span class="lang_label{{config('app.locale')==='jp'?' current_lang':''}}">jp</span></a>
                         <a href="/de"><span class="lang_label{{config('app.locale')==='de'?' current_lang':''}}">de</span></a>
                         <a href="/fr"><span class="lang_label{{config('app.locale')==='fr'?' current_lang':''}}">fr</span></a>
+                        
+                        <select id="switch_lang" class="lang_select">
+                            <option value="0">{{__('Select language')}}</option>
+                            <option value="en">EN</option>
+                            <option value="zh">ZH</option>
+                            <option value="jp">JP</option>
+                            <option value="de">DE</option>
+                            <option value="fr">FR</option>
+                        </select>
+                        <script>
+                            const locales=['zh','en','fr','jp','de'];
+                            const default_locale="{{env('APP_LOCALE')}}";
+                            const current_locale = locales.indexOf(window.location.pathname.split('/')[1])>-1?window.location.pathname.split('/')[1]:"{{env('APP_LOCALE')}}";
+
+                            function switchLocale(dest_locale){
+                                console.log(default_locale,current_locale,dest_locale)
+                                if(dest_locale===current_locale) return;
+
+                                //if dest_locale is default
+                                if(dest_locale===default_locale){
+                                    var new_path = window.location.pathname.replace('/'+current_locale,"")
+                                    new_path = new_path ===""?"/":new_path;
+                                    window.location.href=new_path+window.location.search;
+                                }
+                                // if dest_locale is not default
+                                else{
+                                    //if current_locale is default, then add /dest_lang at the beginning of pathname
+                                    if(current_locale===default_locale && ( locales.indexOf( window.location.pathname.split('/')[1])===-1 ) ){
+                                        window.location.href="/"+dest_locale+window.location.pathname+window.location.search;
+                                    }
+                                    //if current_locale is not default, then replace /lang/ with /dest_lang/
+                                    else{
+                                        console.log(window.location.pathname)
+                                        window.location.href=window.location.pathname.replace('/'+current_locale,"/"+dest_locale)+window.location.search;
+                                    }
+                                }
+
+                            }
+                            $("#switch_lang").change(function() {
+                                if(locales.indexOf(this.value)>-1) switchLocale( this.value );
+                            });
+                        </script>
+
                     </div>
+                    
                 </div>
 
                 <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
@@ -153,7 +203,7 @@
                 </div>
             </div>
         </div>
-        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
         @if(config('app.locale')!==env('APP_LOCALE'))
         <script>
             var source_lang="{{env('APP_LOCALE')}}";
