@@ -1,5 +1,5 @@
 # jQueryNLP - Brief Introduction
-This application is based on Laravel, jQuery and NLP API ( Currently [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml) ). It tries to solve the locale issue of multiple DIVs.
+This application is based on Laravel, jQuery and NLP API ( Currently [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml) and [TencentCloud platform](https://cloud.tencent.com/product/tmt) ). It tries to solve the locale issue of multiple DIVs.
 
 Laravel has [localization function](https://laravel.com/docs/8.x/localization). It's good to use this function for some static text like titles / head lines. For dynamic content, translation function of browser (e.g. Chrome) is also good enough. But it doesn't work in some regions. So we use jQuery and the NLP API to translate the dynamic content. Then we have a complete solution of localization.
 
@@ -24,7 +24,7 @@ The file should be copied to app/Http/Middleware directory. The middleware shoul
 
 ### **TencentAIController in Laravel**   
 
-We use the example code snippets from [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml). You may apply the app_id and app_key from the platform or build your own NLP API.
+We use the example code snippets from [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml)and [TencentCloud platform](https://github.com/TencentCloud/tencentcloud-sdk-php). You may apply the app_id and app_key from the platform or build your own NLP API.
 
 ### **Routers in Laravel**   
 
