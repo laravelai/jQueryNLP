@@ -206,8 +206,11 @@
 
         @if(config('app.locale')!==env('APP_LOCALE'))
         <script>
+            //setting
             var source_lang="{{env('APP_LOCALE')}}";
             var target_lang="{{config('app.locale')}}";
+            var max_length=2000;
+            var engine="tencent_cloud"; //tencent_ai, tencent_cloud
         </script>
         <script src="/js/jquery-trans.js"></script>
         @endif

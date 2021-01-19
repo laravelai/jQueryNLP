@@ -1,11 +1,11 @@
 # jQueryNLP - Brief Introduction
 This application is based on Laravel, jQuery and NLP API ( Currently [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml) and [TencentCloud platform](https://cloud.tencent.com/product/tmt) ). It tries to solve the locale issue of multiple DIVs.
 
-Laravel has [localization function](https://laravel.com/docs/8.x/localization). It's good to use this function for some static text like titles / head lines. For dynamic content, translation function of browser (e.g. Chrome) is also good enough. But it doesn't work in some regions. So we use jQuery and the NLP API to translate the dynamic content. Then we have a complete solution of localization.
+Laravel has [localization function](https://laravel.com/docs/8.x/localization). It's good to use this function for static text like titles, menus or head lines. For dynamic content, translation function of browser (e.g. Chrome) is also good enough. But it doesn't work in some regions. So we use jQuery and the NLP API to translate the dynamic content. Then we have a complete solution of localization.
 
 If you don't use Laravel, you may still use the front-end part of this application by simply setting the source language, target language and updating the ajax response part in Javascript.
 
-Since most NLP APIs only offer 1M bytes free translation per month, this solution only works for website with limited pages.
+Since most NLP APIs only offer 1M bytes free translation per month, this solution only works for website with limited page view per day.
 
 --- 
 ## Configuration
@@ -24,7 +24,7 @@ The file should be copied to app/Http/Middleware directory. The middleware shoul
 
 ### **TencentAIController in Laravel**   
 
-We use the example code snippets from [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml)and [TencentCloud platform](https://github.com/TencentCloud/tencentcloud-sdk-php). You may apply the app_id and app_key from the platform or build your own NLP API.
+We use the example code snippets from [TencentAI platform](https://ai.qq.com/doc/nlptrans.shtml) and [TencentCloud platform](https://github.com/TencentCloud/tencentcloud-sdk-php). You may apply the app_id and app_key from the platforms or build your own NLP API via other platforms like Microsoft or Google.
 
 ### **Routers in Laravel**   
 
@@ -54,13 +54,15 @@ After setting the .env file, the setLocale middleware and the NLP api, the jQuer
             <script>
                 var source_lang="{{env('APP_LOCALE')}}";
                 var target_lang="{{config('app.locale')}}";
+                var max_length=2000;        //maximum packed text length from serval DIVs allowed by NLP platform 
+                var engine="tencent_cloud"; //example platforms: tencent_ai, tencent_cloud
             </script>
             <script src="/js/jquery-trans.js"></script>
         @endif
 
 For all the DIVs you want to translate, just add "trans_" at the beginning of the id:  
 
-        <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm"  id="trans_4">
+        <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm"  id="trans_1">
             Laravel's robust library of first-party tools and libraries, such as <a href="https://forge.laravel.com" class="underline">Forge</a>, ... , and more.
         </div>
 As you can see, the jQuery part could deal with HTML code which allow you to use it for complex DIVs. 

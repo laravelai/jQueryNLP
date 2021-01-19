@@ -3,51 +3,82 @@
 var transObjects = $("[id^='trans']");
 
 var text_array=new Array(transObjects.length);
-for(let i=0;i<transObjects.length;i++){
+
+var i=0;
+var start_no=0;
+var srcText="";
+var temp_array=[];
+var processed=false;
+
+while(i<transObjects.length)
+{
     text_array[i]=new Array();
-    //Clean each jQuery childNode's HTML data and collect the text into an array
     getNodeText(transObjects[i],text_array[i]);
     text_array[i]=text_array[i].join("\n");
-}
-// Join text from different divs into one string
-var srcText = text_array.join('\n\n');
 
-// available example engines ['tencent_ai','tencent_cloud']
-var transData={
-    'source'     : source_lang,
-    'target'     : target_lang,
-    'text'       : srcText,
-    'engine'     : 'tencent_ai'
+
+    if((i>0 || start_no>0) && (temp_array.join('\n\n\n')+text_array[i]).length>max_length ){
+        let transData={
+            'source'     : source_lang,
+            'target'     : target_lang,
+            'text'       : temp_array.join('\n\n\n'),
+            'engine'     : engine
+        }
+
+        updateTransObj(transData,start_no)
+        start_no=i;
+        temp_array=[];
+        processed=true;
+    }
+    else{
+        temp_array.push(text_array[i]);
+        processed=false;
+        i++;
+    }
+
+    
 }
+if(!processed){
+    transData={
+        'source'     : source_lang,
+        'target'     : target_lang,
+        'text'       : temp_array.join('\n\n\n'),
+        'engine'     : engine
+    }
+    updateTransObj(transData,start_no)
+}
+
 
 //Use Ajax to get translated text via Tencent AI Platform
-if(srcText.length>1){
-    var getTrans=$.ajax({
-        type: 'POST',
-        url: '/api/nlp',
-        data: transData,
-        success: function(data){
-    
-            //split into contents for div
-            if(data.ret!==0){
-                console.log(data.msg)
-                return;  //do nothing;
-            } 
-    
-            let responseText=data.target_text
-            
-            text_array=responseText.split('\n\n')
-    
-            //Processing each div
-            for(let i=0;i<transObjects.length;i++){
-                //split translated text into different jQuery childNodes
-                text_array[i]=text_array[i].split('\n');
-                updateNodeText(transObjects[i],text_array[i]);
-            }
-        },
-        dataType: 'json',
-    });
+function updateTransObj(transData,start_no){
+    if(transData.text.length>1){
+        var getTrans=$.ajax({
+            type: 'POST',
+            url: '/api/nlp',
+            data: transData,
+            success: function(data){
+                //error handling, do nothing
+                if(data.ret!==0 || data.target_text===""){
+                    console.log(data.msg)
+                    return;  //do nothing;
+                } 
+                
+                //split into contents for div
+                let responseText=data.target_text
+                text_array=responseText.split('\n\n\n');
+
+                //Processing each div
+                for(let i=0;i<text_array.length;i++){
+                    //split translated text into different jQuery childNodes
+                    text_array[i]=text_array[i].split('\n');
+                    updateNodeText(transObjects[i+start_no],text_array[i]);
+                }
+            },
+            dataType: 'json',
+        });
+    }
 }
+
 
 
 //Covert all jQuery childNodes' text to array
@@ -60,8 +91,8 @@ function getNodeText(TransObj,text_array){
         else{
             if(TransObj.childNodes[i].nodeName==="#text"){
                 let parsedText=delExtraSpaces(delExtraTabs(delNewlines(TransObj.childNodes[i].data))).trim();
-                if(parsedText!==""  && parsedText!==" "){
-                    text_array.push(parsedText);
+                if(parsedText!==""){
+                    text_array.push(delNewlines(parsedText));
                 } 
             } 
         }
@@ -79,7 +110,7 @@ function updateNodeText(TransObj,text_array){
             if(TransObj.childNodes[i].nodeName==="#text"){
                 let parsedText=delExtraSpaces(delExtraTabs(delNewlines(TransObj.childNodes[i].data))).trim();
                 let sentenseEnd=['.','。','?','!'];
-                if(parsedText!=="" && parsedText!==" "){
+                if(parsedText!==""){
                     if(text_array[0]!==undefined){
                         //check the last character of string, remove the . introduced by new line
                         if(!sentenseEnd.includes(parsedText.charAt(parsedText.length-1)) && 
