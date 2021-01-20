@@ -209,7 +209,8 @@
             //setting
             var source_lang="{{env('APP_LOCALE')}}";
             var target_lang="{{config('app.locale')}}";
-            var max_length=2000;
+            var max_length=2000;        // API may limit string length per request
+            var safe_interval=300;      // API may limit total requests per second
             var engine="tencent_cloud"; //tencent_ai, tencent_cloud
         </script>
         <script src="/js/jquery-trans.js"></script>

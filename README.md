@@ -54,8 +54,9 @@ After setting the .env file, the setLocale middleware and the NLP api, the jQuer
             <script>
                 var source_lang="{{env('APP_LOCALE')}}";
                 var target_lang="{{config('app.locale')}}";
-                var max_length=2000;        //maximum packed text length from serval DIVs allowed by NLP platform 
-                var engine="tencent_cloud"; //example platforms: tencent_ai, tencent_cloud
+                var max_length=2000;        // API may limit string length per request
+                var safe_interval=300;      // API may limit total requests per second
+                var engine="tencent_cloud"; //tencent_ai, tencent_cloud
             </script>
             <script src="/js/jquery-trans.js"></script>
         @endif

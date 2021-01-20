@@ -47,8 +47,8 @@ class TencentCloudController extends Controller
         }
         catch(TencentCloudSDKException $e) {
             return json_encode(array(
-                'ret'=>0,
-                'msg'=>$e,
+                'ret'=>$e->getErrorCode(),
+                'msg'=>"Ajax requests per second exceed the limit",
             ));
         }
     }

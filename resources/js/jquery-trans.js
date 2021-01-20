@@ -9,6 +9,7 @@ var start_no=0;
 var srcText="";
 var temp_array=[];
 var processed=false;
+var time_span=0;    //sum of time used in previous ajax request
 
 while(i<transObjects.length)
 {
@@ -25,7 +26,8 @@ while(i<transObjects.length)
             'engine'     : engine
         }
 
-        updateTransObj(transData,start_no)
+        setTimeout(updateTransObj,time_span+safe_interval,transData,start_no);
+        time_span = time_span + safe_interval;
         start_no=i;
         temp_array=[];
         processed=true;
@@ -45,7 +47,7 @@ if(!processed){
         'text'       : temp_array.join('\n\n\n'),
         'engine'     : engine
     }
-    updateTransObj(transData,start_no)
+    setTimeout(updateTransObj,time_span+safe_interval,transData,start_no);
 }
 
 
